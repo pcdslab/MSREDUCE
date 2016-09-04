@@ -7,7 +7,7 @@ Crux-Tide search software.
 java msreduce ./inputFolder xx ./outputFolder
 xx = percentage data to be retained e.g. 10, 20, 30.
 
-Copyright (C) Muaaz Gul Awan and Fahad Saeed  name of author
+Copyright (C) Muaaz Gul Awan and Fahad Saeed 
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@ public class msreduce {
 
     public static String firstLine;
     static float sample_amount;
-    static double dataSizeA = 0,dataSizeN=0,timeStart,timeEnd,totalTime,timeStartWithSort,timeEndWithSort,totalTimeWithSort,timeStartWidth,timeEndWidth,totalTimeWidth;
+    static double dataSizeA = 0,dataSizeN=0,timeStart,timeEnd,totalTime=0,timeStartWithSort,timeEndWithSort,totalTimeWithSort,timeStartWidth,timeEndWidth,totalTimeWidth;
     static  String targetFolder;
    
     
@@ -71,6 +71,7 @@ public class msreduce {
             }
         }
         System.out.println("Percentage of Data Retained: "+(((dataSizeN/dataSizeA)*100)));
+        System.out.println("time taken: "+totalTime);
         writer.close();
     }
 
@@ -108,7 +109,8 @@ public class msreduce {
         spectrumWidth = getWidth(dataSpectrum);
         float intensitySpread = (spectrumWidth/avgWidth)*100;
         float peaksReq = (sample_val/100)*data.size();
-        
+
+        timeStart = System.currentTimeMillis();        
         //below is the classification code
         //5 levels
         if (intensitySpread < 25){
@@ -134,10 +136,14 @@ public class msreduce {
             dataSpectrum = dynamicTune(quants, recursList, peaksReq, 5, 10);
         }
         
-        dataSizeN +=dataSpectrum.size();
-        
+      
         
         dataSpectrum = sortSpectraInsertion(dataSpectrum);
+
+        timeEnd = System.currentTimeMillis();
+
+        totalTime += timeEnd - timeStart;
+        dataSizeN +=dataSpectrum.size();
 
         //converting protonated mass value of precursor ion from .dta file to m/z of the precursor ion
         prec_mass_peptide = (float) ((Float.parseFloat(headsFile[0]) + (Float.parseFloat(headsFile[1]) - 1))) / (Float.parseFloat(headsFile[1]));
@@ -151,6 +157,7 @@ public class msreduce {
 
     }
 
+	//lists all the files in a given folder
     public static void listFilesForFolder(final File folder) throws FileNotFoundException, UnsupportedEncodingException {
         PrintWriter writer = new PrintWriter("files.txt", "UTF-8");
         for (final File fileEntry : folder.listFiles()) {
@@ -162,6 +169,7 @@ public class msreduce {
         }
     }
 
+	//sorts spectra 
     public static ArrayList<Integer> sort(ArrayList<Integer> lst) {
 
         int temp;
@@ -180,6 +188,7 @@ public class msreduce {
         return lst;
     }
 
+	//sorts spectra wrt m_z values
     public static ArrayList<Peak> sortSpectra(ArrayList<Peak> input) {
         ArrayList<Peak> result = new ArrayList<Peak>();
         Peak temp = new Peak();
@@ -200,7 +209,7 @@ public class msreduce {
         return input;
     }
     
-    
+    //sorts spectra wrt m_z values using insertion sort
       public static ArrayList<Peak> sortSpectraInsertion(ArrayList<Peak> input) {
         int j;
         for(int i = 1; i < input.size(); i++){
@@ -220,7 +229,7 @@ public class msreduce {
     }
     
       
-      
+      //sorts spectra by intensity
     public static ArrayList<Peak> sortSpectraByIntensity(ArrayList<Peak> input) {
         Peak temp = new Peak();
         Peak max = new Peak();
@@ -240,7 +249,7 @@ public class msreduce {
         return input;
     }
     
-    
+    //sorts spectra by intensity using isnertion sort
     public static ArrayList<Peak> sortSpectraByIntensityInsertion(ArrayList<Peak> input) {
         int j;
         for(int i = 1; i < input.size(); i++){
@@ -257,7 +266,7 @@ public class msreduce {
         return input;
     }
     
-
+   //performs skewed sampling on spectra 
     public static ArrayList<Peak> skewSampling(ArrayList<Peak> input, float threshold, Peak maxIntensity) {
         ArrayList<Peak> output = new ArrayList<Peak>();
         float thresholdVal = threshold;
@@ -272,6 +281,7 @@ public class msreduce {
         return output;
     }
 
+	//finds maximum wrt intensity
     public static Peak maxPeak(ArrayList<Peak> input) {
         Peak max = new Peak();
         max = input.get(0);
@@ -283,7 +293,7 @@ public class msreduce {
         }
         return max;
     }
-    
+    //finds smallest peak wrt intensity
     public static Peak minPeak(ArrayList<Peak> input) {
         Peak min = new Peak();
         min = input.get(0);
@@ -296,6 +306,7 @@ public class msreduce {
         return min;
     }
 
+	//randomly samples a spectrum based on the sampling rate provided
     public static ArrayList<String> randomSampler(ArrayList<String> data, float sample_val) {
         Random random = new Random();
         ArrayList<Integer> indexList = new ArrayList<Integer>();
@@ -317,6 +328,9 @@ public class msreduce {
         return outList;
     }
 
+	/*
+	converts string-spectrum to spectrum-class
+	*/
     public static ArrayList<Peak> stringToSpectrum(ArrayList<String> input) {
         ArrayList<Peak> output = new ArrayList<Peak>();
         Peak tempSpectrum;
@@ -327,9 +341,6 @@ public class msreduce {
             tempSpectrum = new Peak();
             temp = input.get(i);
             temp2 = temp.split("\\ ");
-            //if(temp.length()>2)
-                //System.out.println("error occured while reading");
-           // else{
             tempSpectrum.intensity = Float.parseFloat(temp2[1]);
             tempSpectrum.m_z = Float.parseFloat(temp2[0]);
             output.add(i, tempSpectrum);
@@ -338,7 +349,8 @@ public class msreduce {
 
         return output;
     }
-
+	
+    //creates fsets
     public static ArrayList<Fset> createFsets(ArrayList<Peak> data, int fSize) {
         ArrayList<Fset> Fsets = new ArrayList<Fset>();
 
@@ -353,6 +365,8 @@ public class msreduce {
         return Fsets;
     }
 
+	//randomly samples Fsets
+	
     public static ArrayList<Fset> randomSamplerFset(ArrayList<Fset> data, float sample_val) {
         Random random = new Random();
         ArrayList<Integer> indexList = new ArrayList<Integer>();
@@ -374,6 +388,7 @@ public class msreduce {
         return outList;
     }
 
+	// merges Fsets
     public static ArrayList<Peak> FsetsMergeToSpectrum(ArrayList<Fset> Fsets) {
         ArrayList<Peak> spectrum = new ArrayList<Peak>();
 
@@ -388,6 +403,9 @@ public class msreduce {
         return spectrum;
     }
 
+	/*
+	   filters fsets based on a threshold 
+	  */
     public static Fset filterFset(Fset setIn, int opt, float threshold) {
         Fset setOut = new Fset();
         Peak maxPeak,minPeak;
@@ -429,6 +447,9 @@ public class msreduce {
         return setOut;
     }
     
+	 /*
+	   Fset related calculations
+	  */
     public static ArrayList<Fset> filterFsetList(ArrayList<Fset> listIn, float threshold, int opt){
         ArrayList<Fset> listOut = new ArrayList<Fset>();
         for( int i = 0; i < listIn.size(); i++)
@@ -437,6 +458,11 @@ public class msreduce {
         return listOut;
     }
     
+	
+	  /*
+	   calculates the average intensity of largest 10 peaks
+	  */
+	 
       public static float avgMax10Peaks(ArrayList<Peak> unsortedIn){
         float avg=0,sum = 0;
         ArrayList<Peak> sortedIn = sortSpectraByIntensityInsertion(unsortedIn);
@@ -451,7 +477,9 @@ public class msreduce {
         return avg;
     }
    
-      
+       /*
+	  calculates the average intensity of largest 3 peaks
+	 */
       public static float avgMax3Peaks(ArrayList<Peak> unsortedIn){
         float avg=0,sum = 0;
         ArrayList<Peak> sortedIn = sortSpectraByIntensityInsertion(unsortedIn);
@@ -466,20 +494,37 @@ public class msreduce {
         return avg;
     }
    
-            public static float avgMin10Peaks(ArrayList<Peak> unsortedIn){
-        float avg=0,sum = 0;
-        ArrayList<Peak> sortedIn = sortSpectraByIntensityInsertion(unsortedIn);
-        ArrayList<Peak> min10 = new ArrayList<Peak>();
+     /*
+	  calculates the average intensity of smallest 10 peaks
+	 */
+       public static float avgMin10Peaks(ArrayList<Peak> unsortedIn){
+           float avg=0,sum = 0;
+           ArrayList<Peak> sortedIn = sortSpectraByIntensityInsertion(unsortedIn);
+           ArrayList<Peak> min10 = new ArrayList<Peak>();
         
-        for( int i = 0; i <10 ; i++)
-            min10.add(sortedIn.get(i));
+           for( int i = 0; i <10 ; i++)
+               min10.add(sortedIn.get(i));
         
-        for (int i = 0; i < min10.size(); i++)
-            sum += min10.get(i).intensity;
-        avg = sum/10;
-        return avg;
+           for (int i = 0; i < min10.size(); i++)
+               sum += min10.get(i).intensity;
+           avg = sum/10;
+           return avg;
     }
+	
       //the output list is unsorted.
+	        
+	  	/**
+	     quantizes given spectra 
+	
+	    @param ArrayList<Peak> listIn
+	     input spectra
+	  
+	    @param int numSamples
+	     number of quanta
+		 
+	    **/
+	  
+	  
       public static ArrayList<ArrayList<Peak>> quantization(ArrayList<Peak> listIn,int numSamples){
           ArrayList<ArrayList<Peak>> outList = new ArrayList<ArrayList<Peak>>();
           ArrayList<Peak> tempList = new ArrayList<Peak>();
@@ -518,6 +563,17 @@ public class msreduce {
           return outList;
       }
       
+	  	/**
+	     randomly samples give spectra
+	
+	    @param ArrayList<Peak> data
+	     input spectra
+	  
+	    @param float sample_val 
+	     sampling rate
+		 
+	 **/
+	  
       public static ArrayList<Peak> randomSamplerPeaks(ArrayList<Peak> data, float sample_val) {
         Random random = new Random();
         ArrayList<Integer> indexList = new ArrayList<Integer>();
@@ -539,6 +595,7 @@ public class msreduce {
         return outList;
     }
       
+	  
       public static float getWidth(ArrayList<Peak> listIn){
           float width,maxAvg,minAvg;
           
@@ -549,6 +606,25 @@ public class msreduce {
       return width;
       }
       
+	    /**
+	     recursively evaluates sampling weights for each quanta.
+	
+	    @param ArrayList<ArrayList<Peak>> quantsIn 
+	    quantized spectra 
+	  
+	    @param String ArrayList<Peak> sampledList
+	     list containing the sampled spectra
+		 
+		@param float numOfPeaksReq
+		 percentage of peaks required to be sampled
+		 
+		 
+		@param int tolPeaks
+		 tolerance in number of peaks.
+		 
+		@param int index 
+		 starting index
+	 **/
       public static ArrayList<Peak> dynamicTune(ArrayList<ArrayList<Peak>> quantsIn, ArrayList<Peak> sampledList,float numOfPeaksReq, int tolPeaks,int index){
           
           if ((quantsIn.get(index).size() >= numOfPeaksReq-tolPeaks) && (quantsIn.get(index).size() <= numOfPeaksReq+tolPeaks)){
@@ -573,7 +649,15 @@ public class msreduce {
           }
       }
       
-      
+    /**
+	gets average width for spectra  
+	
+	  @param File folder 
+	  folder object containing the spectra files for which width is to be calculated.
+	  
+	  @param String targetFolder
+	  address to the folder which contains spectra files
+	 **/
       public static float getAvgWidth(File folder,String targetFolder) throws FileNotFoundException, UnsupportedEncodingException, IOException{
           float avgWidth=0,width=0,sum=0,total=0;
           String temp;
@@ -584,7 +668,6 @@ public class msreduce {
                 listFilesForFolder(fileEntry);
             } else {
                 temp = fileEntry.getName();
-                //dest="/home/gul/NetBeansProjects/GulsGenerator/output/"+temp2[0]+".100%.ms2";
                 ArrayList<String> vals = sampleReader(targetFolder + temp);
                 
                testing = stringToSpectrum(vals);

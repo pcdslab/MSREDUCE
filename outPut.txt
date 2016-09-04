@@ -1,0 +1,12 @@
+Percentage of Data Retained: 49.944117843774436
+time taken: 1715.0
+Percentage of Data Retained: 59.923829907293594
+time taken: 2386.0
+Percentage of Data Retained: 69.91392041501476
+time taken: 3190.0
+Percentage of Data Retained: 79.92060105798629
+time taken: 4313.0
+Percentage of Data Retained: 89.91521195473769
+time taken: 6229.0
+Percentage of Data Retained: 99.99956948675903
+time taken: 2876.0
