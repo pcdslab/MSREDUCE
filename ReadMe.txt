@@ -1,3 +1,9 @@
+
+*Bug Fixes*
+In the most recent commit some bug fixes were performed in the quantization method.
+The fixed version gives improved performance for the UPS2 data set (discussed int he published reprot).
+Minor improvements in the performance over other datasets were also observed.
+
 to compile :
 javac msreduce.java
 

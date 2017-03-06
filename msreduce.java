@@ -35,7 +35,7 @@ import java.io.UnsupportedEncodingException;
 import static java.lang.Math.floor;
 import java.util.ArrayList;
 import java.util.Random;
-
+import java.text.DecimalFormat;
 
 public class msreduce {
 
@@ -71,7 +71,9 @@ public class msreduce {
             }
         }
         System.out.println("Percentage of Data Retained: "+(((dataSizeN/dataSizeA)*100)));
-        System.out.println("time taken: "+totalTime);
+        //System.out.println("time taken: "+totalTime);
+		//System.out.println("peaks retained:"+dataSizeN);
+		//System.out.println("peaks total:"+dataSizeA);
         writer.close();
     }
 
@@ -144,16 +146,17 @@ public class msreduce {
 
         totalTime += timeEnd - timeStart;
         dataSizeN +=dataSpectrum.size();
-
         //converting protonated mass value of precursor ion from .dta file to m/z of the precursor ion
         prec_mass_peptide = (float) ((Float.parseFloat(headsFile[0]) + (Float.parseFloat(headsFile[1]) - 1))) / (Float.parseFloat(headsFile[1]));
-        writer.println("S\t" + headsName[2] + "\t" + headsName[2] + "\t" + prec_mass_peptide);
+        writer.println("S\t" + headsName[2] + "\t" + headsName[2] + "\t" + String.format("%.6f",prec_mass_peptide));
         writer.println("Z\t" + headsFile[1] + "\t" + headsFile[0]);
-
+//writer.flush();
         //writing everything to files now
         for (int i = 0; i < dataSpectrum.size(); i++) {
-            writer.println(dataSpectrum.get(i).m_z + "\t" + dataSpectrum.get(i).intensity);
-        }
+            writer.println(String.format("%.6f",dataSpectrum.get(i).m_z) + "\t" + String.format("%.6f",dataSpectrum.get(i).intensity));
+        writer.flush();
+		}
+		
 
     }
 
@@ -530,7 +533,7 @@ public class msreduce {
           ArrayList<Peak> tempList = new ArrayList<Peak>();
           float maxAvg, minAvg,testVar=0;
           float jumpInc = (float)1/numSamples,jump=0,jumpLag=0;
-          float refVal = avgMax3Peaks(listIn);
+          float refVal = avgMax10Peaks(listIn);
           
           for (int i = 0; i < numSamples; i++){
               if(i == 0){
