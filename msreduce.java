@@ -57,7 +57,7 @@ public class msreduce {
         avgWidth = getAvgWidth(folder, targetFolder);
         
         PrintWriter writer = new PrintWriter(outPutFolder +sample_amount+ ".ms2", "UTF-8");
-      
+        int myScans = 0;
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 listFilesForFolder(fileEntry);
@@ -65,9 +65,12 @@ public class msreduce {
                 temp = fileEntry.getName();
                 
                 ArrayList<String> vals = sampleReader(targetFolder + temp);
-                sampleWriter(temp, writer, sample_amount, vals, bias_val, fSize,avgWidth);
-               
-               
+		//System.out.println("file: "+temp);
+		myScans++;
+		if(vals.size() >15){
+                sampleWriter(temp, writer, sample_amount, vals, bias_val, fSize,avgWidth, myScans);
+             //  System.out.println("size:"+vals.size());
+               }
             }
         }
         System.out.println("Percentage of Data Retained: "+(((dataSizeN/dataSizeA)*100)));
@@ -97,7 +100,7 @@ public class msreduce {
         return vals;
     }
 
-    public static void sampleWriter(String source, PrintWriter writer, float sample_val, ArrayList<String> data, float bias_val, int fSize, float avgWidth) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void sampleWriter(String source, PrintWriter writer, float sample_val, ArrayList<String> data, float bias_val, int fSize, float avgWidth, int myScan) throws FileNotFoundException, UnsupportedEncodingException {
         
         String[] headsName = source.split("\\.");
         String[] headsFile = firstLine.split(" ");
@@ -148,7 +151,10 @@ public class msreduce {
         dataSizeN +=dataSpectrum.size();
         //converting protonated mass value of precursor ion from .dta file to m/z of the precursor ion
         prec_mass_peptide = (float) ((Float.parseFloat(headsFile[0]) + (Float.parseFloat(headsFile[1]) - 1))) / (Float.parseFloat(headsFile[1]));
-        writer.println("S\t" + headsName[2] + "\t" + headsName[2] + "\t" + String.format("%.6f",prec_mass_peptide));
+        if(headsName.length > 2)
+           writer.println("S\t" + headsName[2] + "\t" + headsName[2] + "\t" + String.format("%.6f",prec_mass_peptide));
+        else
+           writer.println("S\t" + " " + "\t" + " " + "\t" + String.format("%.6f",prec_mass_peptide));  
         writer.println("Z\t" + headsFile[1] + "\t" + headsFile[0]);
 //writer.flush();
         //writing everything to files now
@@ -470,12 +476,14 @@ public class msreduce {
         float avg=0,sum = 0;
         ArrayList<Peak> sortedIn = sortSpectraByIntensityInsertion(unsortedIn);
         ArrayList<Peak> max10 = new ArrayList<Peak>();
-        
+        if(sortedIn.size() > 14){
         for( int i = sortedIn.size()-1; i > sortedIn.size()-11 ; i--)
             max10.add(sortedIn.get(i));
         
         for (int i = 0; i < max10.size(); i++)
             sum += max10.get(i).intensity;
+            
+            }
         avg = sum/10;
         return avg;
     }
@@ -504,12 +512,14 @@ public class msreduce {
            float avg=0,sum = 0;
            ArrayList<Peak> sortedIn = sortSpectraByIntensityInsertion(unsortedIn);
            ArrayList<Peak> min10 = new ArrayList<Peak>();
-        
+           if(unsortedIn.size() > 14){
            for( int i = 0; i <10 ; i++)
                min10.add(sortedIn.get(i));
         
            for (int i = 0; i < min10.size(); i++)
                sum += min10.get(i).intensity;
+               
+               }
            avg = sum/10;
            return avg;
     }
@@ -672,7 +682,7 @@ public class msreduce {
             } else {
                 temp = fileEntry.getName();
                 ArrayList<String> vals = sampleReader(targetFolder + temp);
-                
+		//System.out.println("file: "+temp);
                testing = stringToSpectrum(vals);
                
                timeStartWidth = System.currentTimeMillis();
