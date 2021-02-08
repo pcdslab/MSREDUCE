@@ -20,3 +20,5 @@ input folder = any of the unzipped test data set directories e.g. HCD-DS-2
 
 output folder = path to output directory
 ```
+# Related Article
+Muaaz Gul Awan, Fahad Saeed, MS-REDUCE: an ultrafast technique for reduction of big mass spectrometry data for high-throughput processing, Bioinformatics, Volume 32, Issue 10, 15 May 2016, Pages 1518–1526, https://doi.org/10.1093/bioinformatics/btw023
